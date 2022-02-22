@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="stylesheet" href="/_assets/main.css" />
+
+    <title>研判引擎k8s集群搭建 - lk.Default.k8s</title>
+  <link rel="stylesheet" href="/_markdown_plugin_assets/highlight.js/atom-one-light.css" /></head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">lk.Default.k8s</a>
+      </nav>
+      <article>
+        <header>
+          <h1 class="article-title">研判引擎k8s集群搭建</h1>
+          <div class="article-info">
+            <div>
+              <span
+                >Created At：<time datetime="1645090381374"
+                  >2022-02-17 17:33</time
+                ></span
+              >
+              <span
+                >Updated At：<time datetime="1645512018564"
+                  >2022-02-22 14:40</time
+                ></span
+              >
+            </div>
+            
+            <div>
+              Keywords: 
+              <span class="keyword">研判引擎</span>
+              
+              <span class="keyword">k8s</span>
+              
+            </div>
+            
+          </div>
+        </header>
+        <div class="article-content markdown-body"><nav class="table-of-contents"><ul><li><a href="#title-研判引擎k8s集群搭建numbersections-truecreated-2022-02-17t093140662zmodified-2022-02-17t093152870z">title: 研判引擎k8s集群搭建numbersections: truecreated: ‘2022-02-17T09:31:40.662Z’modified: ‘2022-02-17T09:31:52.870Z’</a></li><li><a href="#研判引擎k8s集群搭建">研判引擎k8s集群搭建</a><ul><li><a href="#1-搭建etcd集群">1. 搭建etcd集群</a><ul><li><a href="#11-安装etcd-版本保持一致">1.1 安装etcd ，版本保持一致</a></li><li><a href="#12-修改etcdconf配置文件">1.2 修改etcd.conf配置文件</a></li><li><a href="#13-修改etcdservice配置文件">1.3 修改etcd.service配置文件</a></li><li><a href="#14-生成证书文件">1.4 生成证书文件</a><ul><li><a href="#141-安装工具">1.4.1 安装工具</a></li><li><a href="#142-配置ca请求文件">1.4.2 配置ca请求文件</a></li><li><a href="#143-创建ca证书">1.4.3 创建ca证书</a></li><li><a href="#144-配置ca证书策略">1.4.4 配置ca证书策略</a></li><li><a href="#145-配置etcd请求csr文件">1.4.5 配置etcd请求csr文件</a></li><li><a href="#146-生成证书">1.4.6 生成证书</a></li><li><a href="#147-创建目录拷贝证书">1.4.7 创建目录，拷贝证书</a></li><li><a href="#148-启动etcd服务">1.4.8 启动etcd服务</a></li><li><a href="#149-添加节点">1.4.9 添加节点</a></li></ul></li></ul></li><li><a href="#2-搭建k3s-server服务器">2、搭建k3s server服务器</a><ul><li><a href="#21-安装与配置docker">2.1 安装与配置docker</a><ul><li><a href="#211-安装docker">2.1.1 安装docker</a></li><li><a href="#212-配置docker">2.1.2 配置docker</a></li><li><a href="#213-启动docker服务">2.1.3 启动docker服务</a></li></ul></li><li><a href="#22-安装与配置k3s">2.2 安装与配置k3s</a><ul><li><a href="#221-下载安装k3s">2.2.1 下载安装k3s</a></li><li><a href="#222-更新k3sservice配置文件">2.2.2  更新k3s.service配置文件</a></li><li><a href="#223-创建k3s数据存储目录">2.2.3  创建k3s数据存储目录</a></li></ul></li><li><a href="#224-创建registries配置文件">2.2.4 创建registries配置文件</a><ul><li><a href="#225-启动k3s">2.2.5 启动k3s</a></li></ul></li></ul></li><li><a href="#3-搭建研判引擎cicd服务">3. 搭建研判引擎CI/CD服务</a><ul><li><a href="#31-k8s模式">3.1 k8s模式</a><ul><li><a href="#311-安装helm">3.1.1 安装helm</a></li><li><a href="#312-创建命名空间及配置权限">3.1.2 创建命名空间及配置权限</a></li><li><a href="#313-创建权限配置文件">3.1.3 创建权限配置文件</a></li><li><a href="#312-创建runner配置文件">3.1.2 创建runner配置文件</a></li><li><a href="#313-创建runner">3.1.3 创建runner</a></li></ul></li><li><a href="#32-docker模式">3.2 docker模式</a><ul><li><a href="#321-创建runer配置文件">3.2.1 创建runer配置文件</a></li><li><a href="#322-重启runer">3.2.2 重启runer</a></li></ul></li></ul></li><li><a href="#4-搭建haproxy和keepalive负载均衡服务">4、搭建haproxy和keepalive负载均衡服务</a></li><li><a href="#5-搭建metallb-裸金属服务">5、搭建metallb 裸金属服务</a></li><li><a href="#6-搭建rancher集群可视化管理服务">6、搭建rancher集群可视化管理服务</a><ul><li><a href="#61-安装cert-manager">6.1 安装cert-manager</a></li></ul></li><li><a href="#7-搭建longhorn存储服务">7、搭建longhorn存储服务</a></li><li><a href="#8-搭建邮件服务器">8、搭建邮件服务器</a></li><li><a href="#9-prometheus和alert-manager监控预警服务">9、prometheus和alert-manager监控预警服务</a></li><li><a href="#10-搭建istio服务">10、搭建istio服务</a></li><li><a href="#11-搭建redis集群">11、搭建redis集群</a></li></ul></li></ul></nav><hr />
+<h2 id="title-研判引擎k8s集群搭建numbersections-truecreated-2022-02-17t093140662zmodified-2022-02-17t093152870z">title: 研判引擎k8s集群搭建
+numbersections: true
+created: ‘2022-02-17T09:31:40.662Z’
+modified: ‘2022-02-17T09:31:52.870Z’</h2>
+<ul>
+<li>
+<h1 id="研判引擎k8s集群搭建">研判引擎k8s集群搭建</h1>
+</li>
+<li>
+<h2 id="1-搭建etcd集群">1. 搭建etcd集群</h2>
+<ul>
+<li>
+<h3 id="11-安装etcd-版本保持一致">1.1 安装etcd ，版本保持一致</h3>
+</li>
+<li>
+<h3 id="12-修改etcdconf配置文件">1.2 修改etcd.conf配置文件</h3>
+<div><pre class="hljs"><code><span class="hljs-comment">#[Member]</span>
+<span class="hljs-attr">ETCD_NAME</span>=<span class="hljs-string">"etcd2"</span>
+<span class="hljs-attr">ETCD_DATA_DIR</span>=<span class="hljs-string">"/data/lk/k3s/data/etcd/default.etcd"</span>
+<span class="hljs-attr">ETCD_LISTEN_PEER_URLS</span>=<span class="hljs-string">"https://192.168.205.73:2380"</span>
+<span class="hljs-attr">ETCD_LISTEN_CLIENT_URLS</span>=<span class="hljs-string">"https://192.168.205.73:2379,http://127.0.0.1:2379"</span>
+
+<span class="hljs-comment">#[Clustering]</span>
+<span class="hljs-attr">ETCD_INITIAL_ADVERTISE_PEER_URLS</span>=<span class="hljs-string">"https://192.168.205.73:2380"</span>
+<span class="hljs-attr">ETCD_ADVERTISE_CLIENT_URLS</span>=<span class="hljs-string">"https://192.168.205.73:2379"</span>
+<span class="hljs-attr">ETCD_INITIAL_CLUSTER</span>=<span class="hljs-string">"etcd1=https://192.168.101.34:2380,etcd2=https://192.168.205.73:2380,etcd3=https://192.168.101.12:2380,etcd4=https://192.168.101.24:2380,etcd5=https://192.168.101.25:2380,etcd6=https://192.168.101.26:2380"</span>
+<span class="hljs-attr">ETCD_INITIAL_CLUSTER_TOKEN</span>=<span class="hljs-string">"etcd-cluster"</span>
+<span class="hljs-attr">ETCD_INITIAL_CLUSTER_STATE</span>=<span class="hljs-string">"new"</span></code></pre></div>
+</li>
+<li>
+<h3 id="13-修改etcdservice配置文件">1.3 修改etcd.service配置文件</h3>
+<p>添加启动参数，如：ssl证书位置</p>
+<div><pre class="hljs"><code><span class="hljs-section">[Unit]</span>
+<span class="hljs-attr">Description</span>=Etcd Server
+<span class="hljs-attr">After</span>=network.target
+<span class="hljs-attr">After</span>=network-<span class="hljs-literal">on</span>line.target
+<span class="hljs-attr">Wants</span>=network-<span class="hljs-literal">on</span>line.target
+
+<span class="hljs-section">[Service]</span>
+<span class="hljs-attr">Type</span>=notify
+<span class="hljs-attr">WorkingDirectory</span>=/var/lib/etcd/
+<span class="hljs-attr">EnvironmentFile</span>=-/etc/etcd/etcd.conf
+<span class="hljs-comment"># set GOMAXPROCS to number of processors</span>
+<span class="hljs-attr">ExecStart</span>=/usr/local/bin/etcd \
+<span class="hljs-attr">--cert-file</span>=/etc/etcd/ssl/etcd.pem \
+<span class="hljs-attr">--key-file</span>=/etc/etcd/ssl/etcd-key.pem \
+<span class="hljs-attr">--trusted-ca-file</span>=/etc/etcd/ssl/ca.pem \
+<span class="hljs-attr">--peer-cert-file</span>=/etc/etcd/ssl/etcd.pem \
+<span class="hljs-attr">--peer-key-file</span>=/etc/etcd/ssl/etcd-key.pem \
+<span class="hljs-attr">--peer-trusted-ca-file</span>=/etc/etcd/ssl/ca.pem \
+--peer-client-cert-auth \
+--client-cert-auth
+<span class="hljs-attr">Restart</span>=<span class="hljs-literal">on</span>-failure
+<span class="hljs-attr">LimitNOFILE</span>=<span class="hljs-number">65536</span>
+
+<span class="hljs-section">[Install]</span>
+<span class="hljs-attr">WantedBy</span>=multi-user.target</code></pre></div>
+</li>
+<li>
+<h3 id="14-生成证书文件">1.4 生成证书文件</h3>
+<ul>
+<li>
+<h4 id="141-安装工具">1.4.1 安装工具</h4>
+<div><pre class="hljs"><code>wget https://github.91chi.fun/https://github.com/cloudflare/cfssl/releases/download/v1.6.1/cfssl_1.6.1_linux_amd64
+wget https://github.91chi.fun/https://github.com/cloudflare/cfssl/releases/download/v1.6.1/cfssljson_1.6.1_linux_amd64
+wget https://github.91chi.fun/https://github.com/cloudflare/cfssl/releases/download/v1.6.1/cfssl-certinfo_1.6.1_linux_amd64
+chmod +x cfssl*
+cp cfssl_1.6.1_linux_amd64 /usr/<span class="hljs-built_in">local</span>/bin/cfssl
+cp cfssl-certinfo_1.6.1_linux_amd64 /usr/<span class="hljs-built_in">local</span>/bin/cfssl-certinfo
+cp cfssljson_1.6.1_linux_amd64 /usr/<span class="hljs-built_in">local</span>/bin/cfssljson</code></pre></div>
+</li>
+<li>
+<h4 id="142-配置ca请求文件">1.4.2 配置ca请求文件</h4>
+<div><pre class="hljs"><code><span class="hljs-keyword">cat</span> &gt; <span class="hljs-keyword">ca</span>-csr.json &lt;&lt;<span class="hljs-string">"EOF"</span>
+{
+  <span class="hljs-string">"CN"</span>: <span class="hljs-string">"kubernetes"</span>,
+  <span class="hljs-string">"key"</span>: {
+      <span class="hljs-string">"algo"</span>: <span class="hljs-string">"rsa"</span>,
+      <span class="hljs-string">"size"</span>: 2048
+  },
+  <span class="hljs-string">"names"</span>: [
+    {
+      <span class="hljs-string">"C"</span>: <span class="hljs-string">"CN"</span>,
+      <span class="hljs-string">"ST"</span>: <span class="hljs-string">"Beijing"</span>,
+      <span class="hljs-string">"L"</span>: <span class="hljs-string">"Beijing"</span>,
+      <span class="hljs-string">"O"</span>: <span class="hljs-string">"k8s"</span>,
+      <span class="hljs-string">"OU"</span>: <span class="hljs-string">"system"</span>
+    }
+  ],
+  <span class="hljs-string">"ca"</span>: {
+          <span class="hljs-string">"expiry"</span>: <span class="hljs-string">"438000h"</span>
+  }
+}
+
+EOF</code></pre></div>
+</li>
+<li>
+<h4 id="143-创建ca证书">1.4.3 创建ca证书</h4>
+<div><pre class="hljs"><code>cfssl gencert -initca ca-csr.json | cfssljson -bare ca</code></pre></div>
+</li>
+<li>
+<h4 id="144-配置ca证书策略">1.4.4 配置ca证书策略</h4>
+<div><pre class="hljs"><code>cat &gt; ca-<span class="hljs-built_in">config</span>.<span class="hljs-keyword">json </span>&lt;&lt;<span class="hljs-string">"EOF"</span>
+{
+<span class="hljs-string">"signing"</span>: {
+    <span class="hljs-string">"default"</span>: {
+        <span class="hljs-string">"expiry"</span>: <span class="hljs-string">"438000h"</span>
+      },
+    <span class="hljs-string">"profiles"</span>: {
+        <span class="hljs-string">"kubernetes"</span>: {
+            <span class="hljs-string">"usages"</span>: [
+                <span class="hljs-string">"signing"</span>,
+                <span class="hljs-string">"key encipherment"</span>,
+                <span class="hljs-string">"server auth"</span>,
+                <span class="hljs-string">"client auth"</span>
+            ],
+            <span class="hljs-string">"expiry"</span>: <span class="hljs-string">"438000h"</span>
+        }
+    }
+}
+}
+EOF</code></pre></div>
+</li>
+<li>
+<h4 id="145-配置etcd请求csr文件">1.4.5 配置etcd请求csr文件</h4>
+<div><pre class="hljs"><code>cat &gt; etcd-csr.json &lt;&lt;<span class="hljs-string">"EOF"</span>
+{
+<span class="hljs-string">"CN"</span>: <span class="hljs-string">"etcd"</span>,
+<span class="hljs-string">"hosts"</span>: [
+  <span class="hljs-string">"127.0.0.1"</span>,
+  <span class="hljs-string">"192.168.75.197"</span>,
+  <span class="hljs-string">"192.168.75.198"</span>,
+  <span class="hljs-string">"192.168.75.205"</span>,
+   <span class="hljs-string">"192.168.75.207"</span>,
+   <span class="hljs-string">"192.168.205.73"</span>,
+   <span class="hljs-string">"192.168.101.12"</span>,
+   <span class="hljs-string">"192.168.101.24"</span>,
+   <span class="hljs-string">"192.168.101.25"</span>,
+   <span class="hljs-string">"192.168.101.26"</span>,
+   <span class="hljs-string">"192.168.101.27"</span>,
+   <span class="hljs-string">"192.168.101.28"</span>,
+   <span class="hljs-string">"192.168.101.29"</span>,
+   <span class="hljs-string">"192.168.101.34"</span>,
+   <span class="hljs-string">"192.168.101.35"</span>,
+   <span class="hljs-string">"k8s-company-slave1"</span>,
+   <span class="hljs-string">"k8s-company-slave2"</span>,
+   <span class="hljs-string">"k8s-company-slave3"</span>,
+   <span class="hljs-string">"k8s-company-slave4"</span>,
+   <span class="hljs-string">"k8s-company-slave5"</span>
+],
+<span class="hljs-string">"key"</span>: {
+  <span class="hljs-string">"algo"</span>: <span class="hljs-string">"rsa"</span>,
+  <span class="hljs-string">"size"</span>: <span class="hljs-number">2048</span>
+},
+<span class="hljs-string">"names"</span>: [{
+  <span class="hljs-string">"C"</span>: <span class="hljs-string">"CN"</span>,
+  <span class="hljs-string">"ST"</span>: <span class="hljs-string">"Beijing"</span>,
+  <span class="hljs-string">"L"</span>: <span class="hljs-string">"Beijing"</span>,
+  <span class="hljs-string">"O"</span>: <span class="hljs-string">"k8s"</span>,
+  <span class="hljs-string">"OU"</span>: <span class="hljs-string">"system"</span>
+}]
+}
+<span class="hljs-symbol">EOF</span></code></pre></div>
+</li>
+<li>
+<h4 id="146-生成证书">1.4.6 生成证书</h4>
+<div><pre class="hljs"><code>cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes etcd-csr.json | cfssljson  -bare etcd
+ls etcd*.pem
+<span class="hljs-comment"># etcd-key.pem  etcd.pem</span></code></pre></div>
+</li>
+<li>
+<h4 id="147-创建目录拷贝证书">1.4.7 创建目录，拷贝证书</h4>
+<div><pre class="hljs"><code>mkdir -p /etc/etcd
+mkdir -p /etc/etcd/ssl
+mkdir -p /var/lib/etcd/default.etcd
+cp ca*.pem /etc/etcd/ssl/
+cp etcd*.pem /etc/etcd/ssl/</code></pre></div>
+</li>
+<li>
+<h4 id="148-启动etcd服务">1.4.8 启动etcd服务</h4>
+<div><pre class="hljs"><code><span class="hljs-comment"># 确保各节点时间同步</span>
+yum install -y ntp
+ntpdate ntp1.aliyun.com
+<span class="hljs-comment"># 启动etcd服务</span>
+systemctl start etcd
+systemctl <span class="hljs-built_in">enable</span> etcd</code></pre></div>
+</li>
+<li>
+<h4 id="149-添加节点">1.4.9 添加节点</h4>
+<div><pre class="hljs"><code><span class="hljs-comment"># 已有节点上添加成员</span>
+etcdctl member add sht-sgmhadoopdn-04 --peer-urls=<span class="hljs-string">"http://sht-sgmhadoopdn-04:2380"</span>
+<span class="hljs-comment"># 新节点上启动etcd服务</span>
+systemctl start etcd
+<span class="hljs-comment"># 已有节点上查看添加成员</span>
+etcdctl member list --write-out=table</code></pre></div>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<h2 id="2-搭建k3s-server服务器">2、搭建k3s server服务器</h2>
+<ul>
+<li>
+<h3 id="21-安装与配置docker">2.1 安装与配置docker</h3>
+<ul>
+<li>
+<h4 id="211-安装docker">2.1.1 安装docker</h4>
+<div><pre class="hljs"><code>yum install -y yum-utils
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum install docker-ce docker-ce-cli containerd.io</code></pre></div>
+</li>
+<li>
+<h4 id="212-配置docker">2.1.2 配置docker</h4>
+<p>修改/etc/docker/daemon.json文件：</p>
+<div><pre class="hljs"><code><span class="hljs-punctuation">{</span>
+<span class="hljs-attr">"exec-opts"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"native.cgroupdriver=systemd"</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+<span class="hljs-attr">"log-driver"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"json-file"</span><span class="hljs-punctuation">,</span>
+<span class="hljs-attr">"log-opts"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+ <span class="hljs-attr">"max-size"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"100m"</span>
+<span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+<span class="hljs-attr">"storage-driver"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"overlay2"</span><span class="hljs-punctuation">,</span>
+<span class="hljs-attr">"storage-opts"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+ <span class="hljs-string">"overlay2.override_kernel_check=true"</span>
+<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+<span class="hljs-attr">"default-address-pools"</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span>
+  <span class="hljs-punctuation">{</span><span class="hljs-attr">"base"</span><span class="hljs-punctuation">:</span><span class="hljs-string">"172.80.0.0/16"</span><span class="hljs-punctuation">,</span><span class="hljs-attr">"size"</span><span class="hljs-punctuation">:</span><span class="hljs-number">24</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-punctuation">{</span><span class="hljs-attr">"base"</span><span class="hljs-punctuation">:</span><span class="hljs-string">"172.90.0.0/16"</span><span class="hljs-punctuation">,</span><span class="hljs-attr">"size"</span><span class="hljs-punctuation">:</span><span class="hljs-number">24</span><span class="hljs-punctuation">}</span>
+ <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+<span class="hljs-attr">"registry-mirrors"</span> <span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+<span class="hljs-string">"https://mirror.ccs.tencentyun.com"</span><span class="hljs-punctuation">,</span>
+<span class="hljs-string">"http://registry.docker-cn.com"</span><span class="hljs-punctuation">,</span>
+<span class="hljs-string">"http://docker.mirrors.ustc.edu.cn"</span><span class="hljs-punctuation">,</span>
+<span class="hljs-string">"http://hub-mirror.c.163.com"</span>
+<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+<span class="hljs-attr">"default-ulimits"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"core"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+          <span class="hljs-attr">"Name"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"core"</span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"Soft"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">0</span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"Hard"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">0</span>
+     <span class="hljs-punctuation">}</span>
+ <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+<span class="hljs-attr">"registry-mirrors"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"http://f1361db2.m.daocloud.io"</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+<span class="hljs-attr">"insecure-registries"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"harbor.k8s.fz.eversec:50003"</span><span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span></code></pre></div>
+</li>
+<li>
+<h4 id="213-启动docker服务">2.1.3 启动docker服务</h4>
+<div><pre class="hljs"><code><span class="hljs-comment"># 创建docker存储目录</span>
+mkdir /home/docker
+<span class="hljs-comment"># 创建软连接</span>
+ln -s  /home/docker /var/lib/docker
+<span class="hljs-comment"># 启动docker</span>
+systemctl start docker
+systemctl <span class="hljs-built_in">enable</span> docker</code></pre></div>
+</li>
+</ul>
+</li>
+<li>
+<h3 id="22-安装与配置k3s">2.2 安装与配置k3s</h3>
+<ul>
+<li>
+<h4 id="221-下载安装k3s">2.2.1 下载安装k3s</h4>
+<div><pre class="hljs"><code>curl -sfL http://rancher-mirror.cnrancher.com/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn sh -s -  server --docker --kubelet-arg cgroup-driver=systemd --no-deploy traefik --no-deploy servicelb</code></pre></div>
+</li>
+<li>
+<h4 id="222-更新k3sservice配置文件">2.2.2  更新k3s.service配置文件</h4>
+<div><pre class="hljs"><code><span class="hljs-section">[Unit]</span>
+<span class="hljs-attr">Description</span>=Lightweight Kubernetes
+<span class="hljs-attr">Documentation</span>=https://k3s.io
+<span class="hljs-attr">Wants</span>=network-<span class="hljs-literal">on</span>line.target
+<span class="hljs-attr">After</span>=network-<span class="hljs-literal">on</span>line.target
+
+<span class="hljs-section">[Install]</span>
+<span class="hljs-attr">WantedBy</span>=multi-user.target
+
+<span class="hljs-section">[Service]</span>
+<span class="hljs-attr">Type</span>=notify
+<span class="hljs-attr">EnvironmentFile</span>=/etc/systemd/system/k3s.service.env
+<span class="hljs-attr">KillMode</span>=process
+<span class="hljs-attr">Delegate</span>=<span class="hljs-literal">yes</span>
+<span class="hljs-comment"># Having non-zero Limit*s causes performance problems due to accounting overhead</span>
+<span class="hljs-comment"># in the kernel. We recommend using cgroups to do container-local accounting.</span>
+<span class="hljs-attr">LimitNOFILE</span>=<span class="hljs-number">1048576</span>
+<span class="hljs-attr">LimitNPROC</span>=infinity
+<span class="hljs-attr">LimitCORE</span>=infinity
+<span class="hljs-attr">TasksMax</span>=infinity
+<span class="hljs-attr">TimeoutStartSec</span>=<span class="hljs-number">0</span>
+<span class="hljs-attr">Restart</span>=always
+<span class="hljs-attr">RestartSec</span>=<span class="hljs-number">5</span>s
+<span class="hljs-attr">ExecStartPre</span>=-/sbin/modprobe br_netfilter
+<span class="hljs-attr">ExecStartPre</span>=-/sbin/modprobe overlay
+<span class="hljs-attr">ExecStart</span>=/usr/local/bin/k3s \
+  server \
+      '--docker' \
+      '--kubelet-arg' \
+      '<span class="hljs-attr">cgroup-driver</span>=systemd<span class="hljs-string">' \
+      '</span>--<span class="hljs-literal">no</span>-deploy<span class="hljs-string">' \
+      '</span>traefik<span class="hljs-string">' \
+      '</span>--<span class="hljs-literal">no</span>-deploy<span class="hljs-string">' \
+      '</span>servicelb<span class="hljs-string">' \
+      '</span>--kube-proxy-arg<span class="hljs-string">' \
+      '</span>proxy-mode=<span class="hljs-string">' \
+      '</span>masquerade-all=<span class="hljs-literal">true</span><span class="hljs-string">' \
+      '</span>--kube-proxy-arg<span class="hljs-string">' \
+      '</span>metrics-bind-address=<span class="hljs-number">0.0</span>.<span class="hljs-number">0.0</span><span class="hljs-string">' \
+      '</span>--kube-apiserver-arg<span class="hljs-string">' \
+      '</span>service-node-port-range=<span class="hljs-number">10000</span>-<span class="hljs-number">65000</span><span class="hljs-string">' \
+      '</span>--write-kubeconfig<span class="hljs-string">' \
+      '</span>/root/.kube/config<span class="hljs-string">' \
+      '</span>--write-kubeconfig-mode<span class="hljs-string">' \
+      '</span><span class="hljs-number">666</span><span class="hljs-string">' \
+      '</span>--node-ip<span class="hljs-string">' \
+      '</span><span class="hljs-number">192.168</span>.<span class="hljs-number">101.34</span><span class="hljs-string">' \
+      '</span>--tls-san<span class="hljs-string">' \
+      '</span><span class="hljs-number">192.168</span>.<span class="hljs-number">101.254</span><span class="hljs-string">' \
+      '</span>--datastore-endpoint<span class="hljs-string">' \
+      '</span>https://<span class="hljs-number">192.168</span>.<span class="hljs-number">101.34</span>:<span class="hljs-number">2379</span>,https://<span class="hljs-number">192.168</span>.<span class="hljs-number">101.35</span>:<span class="hljs-number">2379</span>,https://<span class="hljs-number">192.168</span>.<span class="hljs-number">75.198</span>:<span class="hljs-number">2379</span><span class="hljs-string">' \
+      '</span>--datastore-cafile<span class="hljs-string">' \
+      '</span>/etc/etcd/ssl/ca.pem<span class="hljs-string">' \
+      '</span>--datastore-certfile<span class="hljs-string">' \
+      '</span>/etc/etcd/ssl/etcd.pem<span class="hljs-string">' \
+      '</span>--datastore-keyfile<span class="hljs-string">' \
+      '</span>/etc/etcd/ssl/etcd-key.pem<span class="hljs-string">' \
+      '</span>--token<span class="hljs-string">' \
+      '</span>K1066a3c7e3bd50b9faf0f7b7371885ded870539792a5230bc0240d1f53651b97f7::server:<span class="hljs-number">4</span>ec444a389e8451f32bf9c643c221abf<span class="hljs-string">' \
+      '</span>--data-dir<span class="hljs-string">' \
+      '</span>/home/var/lib/rancher/k3s<span class="hljs-string">'</span></code></pre></div>
+</li>
+<li>
+<h4 id="223-创建k3s数据存储目录">2.2.3  创建k3s数据存储目录</h4>
+<div><pre class="hljs"><code> mkdir -p /home/var/lib/rancher/k3s</code></pre></div>
+</li>
+<li>
+<h3 id="224-创建registries配置文件">2.2.4 创建registries配置文件</h3>
+<div><pre class="hljs"><code>cat &gt;  <span class="hljs-regexp">/etc/</span>rancher<span class="hljs-regexp">/k3s/</span>registries.yaml &lt;&lt; <span class="hljs-string">"EOF"</span>
+mirrors:
+  <span class="hljs-string">"harbor.k8s.fz.eversec:50003"</span>:
+    endpoint:
+      - <span class="hljs-string">"http://harbor.k8s.fz.eversec:50003"</span>
+  <span class="hljs-string">"docker.io"</span>:
+    endpoint:
+      - <span class="hljs-string">"https://docker.mirrors.ustc.edu.cn"</span>
+      - <span class="hljs-string">"https://registry.docker-cn.com"</span>
+      - <span class="hljs-string">"https://hub-mirror.c.163.com"</span>
+configs:
+  <span class="hljs-string">"harbor.k8s.fz.eversec:50003"</span>:
+    auth:
+      username: admin <span class="hljs-comment"># this is the registry username</span>
+      password: Starfz123)(* <span class="hljs-comment"># this is the registry password</span>
+EOF					   </code></pre></div>
+</li>
+<li>
+<h4 id="225-启动k3s">2.2.5 启动k3s</h4>
+<div><pre class="hljs"><code>systemctl daemon-reload
+systemctl restart k3s</code></pre></div>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<h2 id="3-搭建研判引擎cicd服务">3. 搭建研判引擎CI/CD服务</h2>
+<ul>
+<li>
+<h3 id="31-k8s模式">3.1 k8s模式</h3>
+<ul>
+<li>
+<h4 id="311-安装helm">3.1.1 安装helm</h4>
+<div><pre class="hljs"><code>wget https://get.helm.sh/helm-v3.8.0-linux-amd64.tar.gz
+tar -xvzf helm-v3.8.0-linux-amd64.tar.gz
+cp linux-amd64/helm /usr/<span class="hljs-built_in">local</span>/bin/</code></pre></div>
+</li>
+<li>
+<h4 id="312-创建命名空间及配置权限">3.1.2 创建命名空间及配置权限</h4>
+<p>创建命名空间</p>
+<div><pre class="hljs"><code>kubectl create ns fz-web-detect</code></pre></div>
+</li>
+<li>
+<h4 id="313-创建权限配置文件">3.1.3 创建权限配置文件</h4>
+<p>gitlab-runner-role.yaml</p>
+<div><pre class="hljs"><code><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">rbac.authorization.k8s.io/v1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">Role</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">gitlab-runner-k8s</span>
+  <span class="hljs-attr">namespace:</span> <span class="hljs-string">fz-web-detect</span>
+<span class="hljs-attr">rules:</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">apiGroups:</span> [<span class="hljs-string">"*"</span>]
+    <span class="hljs-attr">resources:</span> [<span class="hljs-string">"pods"</span>, <span class="hljs-string">"pods/exec"</span>,<span class="hljs-string">"services"</span>,<span class="hljs-string">"secrets"</span>,<span class="hljs-string">"configmaps"</span>,<span class="hljs-string">"daemonsets"</span>]
+    <span class="hljs-attr">verbs:</span> [<span class="hljs-string">"get"</span>, <span class="hljs-string">"list"</span>, <span class="hljs-string">"delete"</span>, <span class="hljs-string">"patch"</span>, <span class="hljs-string">"create"</span>]
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">apiGroups:</span> [<span class="hljs-string">"extensions"</span>, <span class="hljs-string">"apps"</span>,<span class="hljs-string">""</span>]
+    <span class="hljs-attr">resources:</span> [<span class="hljs-string">"deployments"</span>, <span class="hljs-string">"deployments/scale"</span>,<span class="hljs-string">"services"</span>,<span class="hljs-string">"secrets"</span>,<span class="hljs-string">"configmaps"</span>,<span class="hljs-string">"daemonsets"</span>]
+    <span class="hljs-attr">verbs:</span> [<span class="hljs-string">"get"</span>, <span class="hljs-string">"list"</span>, <span class="hljs-string">"delete"</span>, <span class="hljs-string">"patch"</span>, <span class="hljs-string">"create"</span>]
+<span class="hljs-meta">---</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">rbac.authorization.k8s.io/v1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">RoleBinding</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">gitlab-runner-k8s</span>
+  <span class="hljs-attr">namespace:</span> <span class="hljs-string">fz-web-detect</span>
+<span class="hljs-attr">subjects:</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">kind:</span> <span class="hljs-string">ServiceAccount</span>
+    <span class="hljs-attr">name:</span> <span class="hljs-string">default</span>
+    <span class="hljs-comment">#apiGroup: rbac.authorization.k8s.io</span>
+    <span class="hljs-attr">namespace:</span> <span class="hljs-string">fz-web-detect</span>
+<span class="hljs-attr">roleRef:</span>
+  <span class="hljs-attr">kind:</span> <span class="hljs-string">Role</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">gitlab-runner-k8s</span>
+  <span class="hljs-attr">apiGroup:</span> <span class="hljs-string">rbac.authorization.k8s.io</span>
+<span class="hljs-meta">---</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">rbac.authorization.k8s.io/v1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">ClusterRoleBinding</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">gitlab-runner-k8s</span>
+<span class="hljs-attr">roleRef:</span>
+  <span class="hljs-attr">apiGroup:</span> <span class="hljs-string">rbac.authorization.k8s.io</span>
+  <span class="hljs-attr">kind:</span> <span class="hljs-string">ClusterRole</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">cluster-admin</span>
+<span class="hljs-attr">subjects:</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">kind:</span> <span class="hljs-string">ServiceAccount</span>
+    <span class="hljs-attr">name:</span> <span class="hljs-string">gitlab-runner-k8s</span>
+    <span class="hljs-attr">namespace:</span> <span class="hljs-string">fz-web-detect</span>
+</code></pre></div>
+</li>
+<li>
+<h4 id="312-创建runner配置文件">3.1.2 创建runner配置文件</h4>
+<p>values.yaml，其中的gitlabUrl、runnerRegistrationToken及runners-&gt;config,需要看情况调整</p>
+<div><pre class="hljs"><code><span class="hljs-comment">## GitLab Runner Image</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment">## By default it's using gitlab/gitlab-runner:alpine-v{VERSION}</span>
+<span class="hljs-comment">## where {VERSION} is taken from Chart.yaml from appVersion field</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment">## ref: https://hub.docker.com/r/gitlab/gitlab-runner/tags/</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment">## <span class="hljs-doctag">Note:</span> If you change the image to the ubuntu release</span>
+<span class="hljs-comment">##       don't forget to change the securityContext;</span>
+<span class="hljs-comment">##       these images run on different user IDs.</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment"># image: gitlab/gitlab-runner:alpine-v11.6.0</span>
+
+<span class="hljs-comment">## Specify a imagePullPolicy for the main runner deployment</span>
+<span class="hljs-comment">## 'Always' if imageTag is 'latest', else set to 'IfNotPresent'</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment">## <span class="hljs-doctag">Note:</span> it does not apply to job containers launched by this executor.</span>
+<span class="hljs-comment">## Use `pull_policy` in [runners.kubernetes] to change it.</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment">## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">IfNotPresent</span>
+
+<span class="hljs-comment">## Specifying ImagePullSecrets on a Pod</span>
+<span class="hljs-comment">## Kubernetes supports specifying container image registry keys on a Pod.</span>
+<span class="hljs-comment">## ref: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment"># imagePullSecrets:</span>
+<span class="hljs-comment">#   - name: "image-pull-secret"</span>
+
+<span class="hljs-comment">## How many runner pods to launch.</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment">## <span class="hljs-doctag">Note:</span> Using more than one replica is not supported with a runnerToken. Use a runnerRegistrationToken</span>
+<span class="hljs-comment">## to create multiple runner replicas.</span>
+<span class="hljs-attr">replicas:</span> <span class="hljs-number">1</span>
+
+<span class="hljs-comment">## How many old ReplicaSets for this Deployment you want to retain</span>
+<span class="hljs-comment"># revisionHistoryLimit: 10</span>
+
+<span class="hljs-comment">## The GitLab Server URL (with protocol) that want to register the runner against</span>
+<span class="hljs-comment">## ref: https://docs.gitlab.com/runner/commands/README.html#gitlab-runner-register</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-attr">gitlabUrl:</span> <span class="hljs-string">http://192.168.75.205:58080/</span>
+
+<span class="hljs-comment">## The Registration Token for adding new Runners to the GitLab Server. This must</span>
+<span class="hljs-comment">## be retrieved from your GitLab Instance.</span>
+<span class="hljs-comment">## ref: https://docs.gitlab.com/ce/ci/runners/README.html</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-attr">runnerRegistrationToken:</span> <span class="hljs-string">"FKNsYPhz4E7zwuJew3QG"</span>
+
+<span class="hljs-comment">## The Runner Token for adding new Runners to the GitLab Server. This must</span>
+<span class="hljs-comment">## be retrieved from your GitLab Instance. It is token of already registered runner.</span>
+<span class="hljs-comment">## ref: (we don't yet have docs for that, but we want to use existing token)</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment"># runnerToken: ""</span>
+<span class="hljs-comment">#</span>
+<span class="hljs-comment">## Unregister all runners before termination</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment">## Updating the runner's chart version or configuration will cause the runner container</span>
+<span class="hljs-comment">## to be terminated and created again. This may cause your Gitlab instance to reference</span>
+<span class="hljs-comment">## non-existant runners. Un-registering the runner before termination mitigates this issue.</span>
+<span class="hljs-comment">## ref: https://docs.gitlab.com/runner/commands/README.html#gitlab-runner-unregister</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment"># unregisterRunners: true</span>
+
+<span class="hljs-comment">## When stopping the runner, give it time to wait for its jobs to terminate.</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment">## Updating the runner's chart version or configuration will cause the runner container</span>
+<span class="hljs-comment">## to be terminated with a graceful stop request. terminationGracePeriodSeconds</span>
+<span class="hljs-comment">## instructs Kubernetes to wait long enough for the runner pod to terminate gracefully.</span>
+<span class="hljs-comment">## ref: https://docs.gitlab.com/runner/commands/#signals</span>
+<span class="hljs-attr">terminationGracePeriodSeconds:</span> <span class="hljs-number">3600</span>
+
+<span class="hljs-comment">## Set the certsSecretName in order to pass custom certficates for GitLab Runner to use</span>
+<span class="hljs-comment">## Provide resource name for a Kubernetes Secret Object in the same namespace,</span>
+<span class="hljs-comment">## this is used to populate the /home/gitlab-runner/.gitlab-runner/certs/ directory</span>
+<span class="hljs-comment">## ref: https://docs.gitlab.com/runner/configuration/tls-self-signed.html#supported-options-for-self-signed-certificates</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment"># certsSecretName:</span>
+
+<span class="hljs-comment">## Configure the maximum number of concurrent jobs</span>
+<span class="hljs-comment">## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-global-section</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-attr">concurrent:</span> <span class="hljs-number">10</span>
+
+<span class="hljs-comment">## Defines in seconds how often to check GitLab for a new builds</span>
+<span class="hljs-comment">## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-global-section</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-attr">checkInterval:</span> <span class="hljs-number">30</span>
+
+<span class="hljs-comment">## Configure GitLab Runner's logging level. Available values are: debug, info, warn, error, fatal, panic</span>
+<span class="hljs-comment">## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-global-section</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment"># logLevel:</span>
+
+<span class="hljs-comment">## Configure GitLab Runner's logging format. Available values are: runner, text, json</span>
+<span class="hljs-comment">## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-global-section</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment"># logFormat:</span>
+
+<span class="hljs-comment">## Configure GitLab Runner's Sentry DSN.</span>
+<span class="hljs-comment">## ref https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-global-section</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment"># sentryDsn:</span>
+
+<span class="hljs-comment">## A custom bash script that will be executed prior to the invocation</span>
+<span class="hljs-comment">## gitlab-runner process</span>
+<span class="hljs-comment">#</span>
+<span class="hljs-comment">#preEntrypointScript: |</span>
+<span class="hljs-comment">#  echo "hello"</span>
+
+<span class="hljs-comment">## For RBAC support:</span>
+<span class="hljs-attr">rbac:</span>
+  <span class="hljs-attr">create:</span> <span class="hljs-literal">true</span>
+
+  <span class="hljs-comment">## Define specific rbac permissions.</span>
+  <span class="hljs-comment">## DEPRECATED: see .Values.rbac.rules</span>
+  <span class="hljs-comment"># resources: ["pods", "pods/exec", "secrets"]</span>
+  <span class="hljs-comment"># verbs: ["get", "list", "watch", "create", "patch", "delete"]</span>
+
+  <span class="hljs-comment">## Define list of rules to be added to the rbac role permissions.</span>
+  <span class="hljs-comment">## Each rule supports the keys:</span>
+  <span class="hljs-comment">## - apiGroups: default "" (indicates the core API group) if missing or empty.</span>
+  <span class="hljs-comment">## - resources: default "*" if missing or empty.</span>
+  <span class="hljs-comment">## - verbs: default "*" if missing or empty.</span>
+  <span class="hljs-attr">rules:</span>
+  <span class="hljs-comment">#- resources: ["pods", "pods/exec", "secrets","services","deployments","configmaps"]</span>
+  <span class="hljs-comment">#  verbs: ["get", "list", "watch", "create", "patch", "delete"]</span>
+  <span class="hljs-comment">#- apiGroups: ["","extensions", "apps"]</span>
+  <span class="hljs-comment">#  resources: ["services", "endpoints", "pods","deployments","configmaps","secrets"]</span>
+  <span class="hljs-comment">#  verbs: ["get", "list", "watch", "create", "patch", "delete"]</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">apiGroups:</span> [<span class="hljs-string">"*"</span>]
+    <span class="hljs-attr">resources:</span> [<span class="hljs-string">"*"</span>]
+    <span class="hljs-attr">verbs:</span> [<span class="hljs-string">"*"</span>]
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">apiGroups:</span> [<span class="hljs-string">""</span>]
+    <span class="hljs-attr">resources:</span> [<span class="hljs-string">"deployments"</span>,<span class="hljs-string">"services"</span>,<span class="hljs-string">"pods"</span>,<span class="hljs-string">"secrets"</span>,<span class="hljs-string">"configmaps"</span>,<span class="hljs-string">"daemonsets"</span>]
+    <span class="hljs-attr">verbs:</span> [<span class="hljs-string">"get"</span>, <span class="hljs-string">"list"</span>, <span class="hljs-string">"watch"</span>, <span class="hljs-string">"create"</span>, <span class="hljs-string">"patch"</span>, <span class="hljs-string">"delete"</span>]
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">apiGroups:</span> [<span class="hljs-string">"apps"</span>]
+    <span class="hljs-attr">resources:</span> [<span class="hljs-string">"deployments"</span>,<span class="hljs-string">"services"</span>,<span class="hljs-string">"pods"</span>,<span class="hljs-string">"secrets"</span>,<span class="hljs-string">"configmaps"</span>,<span class="hljs-string">"daemonsets"</span>]
+    <span class="hljs-attr">verbs:</span> [<span class="hljs-string">"get"</span>, <span class="hljs-string">"list"</span>, <span class="hljs-string">"watch"</span>, <span class="hljs-string">"create"</span>, <span class="hljs-string">"patch"</span>, <span class="hljs-string">"delete"</span>]
+
+
+  <span class="hljs-comment">## Run the gitlab-bastion container with the ability to deploy/manage containers of jobs</span>
+  <span class="hljs-comment">## cluster-wide or only within namespace</span>
+  <span class="hljs-attr">clusterWideAccess:</span> <span class="hljs-literal">true</span>
+
+  <span class="hljs-comment">## Use the following Kubernetes Service Account name if RBAC is disabled in this Helm chart (see rbac.create)</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment"># serviceAccountName: default</span>
+
+  <span class="hljs-comment">## Specify annotations for Service Accounts, useful for annotations such as eks.amazonaws.com/role-arn</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## ref: https://docs.aws.amazon.com/eks/latest/userguide/specify-service-account-role.html</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment"># serviceAccountAnnotations: {}</span>
+
+  <span class="hljs-comment">## Use podSecurity Policy</span>
+  <span class="hljs-comment">## ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/</span>
+  <span class="hljs-attr">podSecurityPolicy:</span>
+    <span class="hljs-attr">enabled:</span> <span class="hljs-literal">false</span>
+    <span class="hljs-attr">resourceNames:</span>
+    <span class="hljs-bullet">-</span> <span class="hljs-string">gitlab-runner</span>
+
+  <span class="hljs-comment">## Specify one or more imagePullSecrets used for pulling the runner image</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment"># imagePullSecrets: []</span>
+
+<span class="hljs-comment">## Configure integrated Prometheus metrics exporter</span>
+<span class="hljs-comment">## ref: https://docs.gitlab.com/runner/monitoring/#configuration-of-the-metrics-http-server</span>
+<span class="hljs-attr">metrics:</span>
+  <span class="hljs-attr">enabled:</span> <span class="hljs-literal">true</span>
+
+<span class="hljs-comment">## Configuration for the Pods that the runner launches for each new job</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-attr">runners:</span>
+  <span class="hljs-comment"># runner configuration, where the multi line strings is evaluated as</span>
+  <span class="hljs-comment"># template so you can specify helm values inside of it.</span>
+  <span class="hljs-comment">#</span>
+  <span class="hljs-comment"># tpl: https://helm.sh/docs/howto/charts_tips_and_tricks/#using-the-tpl-function</span>
+  <span class="hljs-comment"># runner configuration: https://docs.gitlab.com/runner/configuration/advanced-configuration.html</span>
+  <span class="hljs-attr">config:</span> <span class="hljs-string">|
+    [[runners]]
+      clone_url = "http://192.168.75.205:58080/"
+      cache_dir = "/cache"
+      [runners.kubernetes]
+        namespace = "{{.Release.Namespace}}"
+        image = "ubuntu:16.04"
+        extra_hosts = ["harbor.k8s.fz.eversec:192.168.75.205"]
+      [[runners.kubernetes.volumes.host_path]]
+        name = "docker-sock"
+        mount_path = "/var/run/docker.sock"
+        host_path = "/var/run/docker.sock"
+      [[runners.kubernetes.volumes.host_path]]
+        name = "docker-config"
+        mount_path = "/root/.docker/config.json"
+        host_path = "/root/.docker/config.json"
+        read_only = true
+      [[runners.kubernetes.volumes.host_path]]
+        name = "cache"
+        mount_path = "/cache"
+        host_path = "/data/lk/gitlab/cache"
+</span>
+  <span class="hljs-comment">## Which executor should be used</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment"># executor: kubernetes</span>
+
+  <span class="hljs-comment">## Default container image to use for builds when none is specified</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-comment"># image: ubuntu:16.04</span>
+
+  <span class="hljs-comment">## Specify one or more imagePullSecrets</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-comment"># imagePullSecrets: []</span>
+
+  <span class="hljs-comment">## Specify the image pull policy: never, if-not-present, always. The cluster default will be used if not set.</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">"if-not-present"</span>
+
+  <span class="hljs-comment">## Defines number of concurrent requests for new job from GitLab</span>
+  <span class="hljs-comment">## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-runners-section</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-comment"># requestConcurrency: 1</span>
+
+  <span class="hljs-comment">## Specify whether the runner should be locked to a specific project: true, false. Defaults to true.</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment"># locked: true</span>
+
+  <span class="hljs-comment">## Specify the tags associated with the runner. Comma-separated list of tags.</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## ref: https://docs.gitlab.com/ce/ci/runners/#use-tags-to-limit-the-number-of-jobs-using-the-runner</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-attr">tags:</span> <span class="hljs-string">"k8s,web-detect-engine,local,develop"</span>
+
+  <span class="hljs-comment">## Specify the name for the runner.</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">"web-detect-engine-runner"</span>
+
+  <span class="hljs-comment">## Specify if jobs without tags should be run.</span>
+  <span class="hljs-comment">## If not specified, Runner will default to true if no tags were specified. In other case it will</span>
+  <span class="hljs-comment">## default to false.</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## ref: https://docs.gitlab.com/ce/ci/runners/#runner-is-allowed-to-run-untagged-jobs</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment"># runUntagged: true</span>
+
+  <span class="hljs-comment">## Specify whether the runner should only run protected branches.</span>
+  <span class="hljs-comment">## Defaults to False.</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## ref: https://docs.gitlab.com/ee/ci/runners/#prevent-runners-from-revealing-sensitive-information</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment"># protected: true</span>
+
+  <span class="hljs-comment">## Run all containers with the privileged flag enabled</span>
+  <span class="hljs-comment">## This will allow the docker:dind image to run if you need to run Docker</span>
+  <span class="hljs-comment">## commands. Please read the docs before turning this on:</span>
+  <span class="hljs-comment">## ref: https://docs.gitlab.com/runner/executors/kubernetes.html#using-dockerdind</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-attr">privileged:</span> <span class="hljs-literal">true</span>
+
+  <span class="hljs-comment">## The name of the secret containing runner-token and runner-registration-token</span>
+  <span class="hljs-comment"># secret: gitlab-runner</span>
+
+  <span class="hljs-comment">## Namespace to run Kubernetes jobs in (defaults to the same namespace of this release)</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-comment"># namespace:</span>
+
+  <span class="hljs-comment">## The amount of time, in seconds, that needs to pass before the runner will</span>
+  <span class="hljs-comment">## timeout attempting to connect to the container it has just created.</span>
+  <span class="hljs-comment">## ref: https://docs.gitlab.com/runner/executors/kubernetes.html</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-comment"># pollTimeout: 180</span>
+
+  <span class="hljs-comment">## Set maximum build log size in kilobytes, by default set to 4096 (4MB)</span>
+  <span class="hljs-comment">## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-runners-section</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-comment"># outputLimit: 4096</span>
+
+  <span class="hljs-comment">## Distributed runners caching</span>
+  <span class="hljs-comment">## ref: https://docs.gitlab.com/runner/configuration/autoscale.html#distributed-runners-caching</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## If you want to use s3 based distributing caching:</span>
+  <span class="hljs-comment">## First of all you need to uncomment General settings and S3 settings sections.</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## Create a secret 's3access' containing 'accesskey' &amp; 'secretkey'</span>
+  <span class="hljs-comment">## ref: https://aws.amazon.com/blogs/security/wheres-my-secret-access-key/</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## $ kubectl create secret generic s3access \</span>
+  <span class="hljs-comment">##   --from-literal=accesskey="YourAccessKey" \</span>
+  <span class="hljs-comment">##   --from-literal=secretkey="YourSecretKey"</span>
+  <span class="hljs-comment">## ref: https://kubernetes.io/docs/concepts/configuration/secret/</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## If you want to use gcs based distributing caching:</span>
+  <span class="hljs-comment">## First of all you need to uncomment General settings and GCS settings sections.</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## Access using credentials file:</span>
+  <span class="hljs-comment">## Create a secret 'google-application-credentials' containing your application credentials file.</span>
+  <span class="hljs-comment">## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-runnerscachegcs-section</span>
+  <span class="hljs-comment">## You could configure</span>
+  <span class="hljs-comment">## $ kubectl create secret generic google-application-credentials \</span>
+  <span class="hljs-comment">##   --from-file=gcs-application-credentials-file=./path-to-your-google-application-credentials-file.json</span>
+  <span class="hljs-comment">## ref: https://kubernetes.io/docs/concepts/configuration/secret/</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## Access using access-id and private-key:</span>
+  <span class="hljs-comment">## Create a secret 'gcsaccess' containing 'gcs-access-id' &amp; 'gcs-private-key'.</span>
+  <span class="hljs-comment">## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-runnerscachegcs-section</span>
+  <span class="hljs-comment">## You could configure</span>
+  <span class="hljs-comment">## $ kubectl create secret generic gcsaccess \</span>
+  <span class="hljs-comment">##   --from-literal=gcs-access-id="YourAccessID" \</span>
+  <span class="hljs-comment">##   --from-literal=gcs-private-key="YourPrivateKey"</span>
+  <span class="hljs-comment">## ref: https://kubernetes.io/docs/concepts/configuration/secret/</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## If you want to use Azure-based distributed caching:</span>
+  <span class="hljs-comment">## First, uncomment General settings.</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## Create a secret 'azureaccess' containing 'azure-account-name' &amp; 'azure-account-key'</span>
+  <span class="hljs-comment">## ref: https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## $ kubectl create secret generic azureaccess \</span>
+  <span class="hljs-comment">##   --from-literal=azure-account-name="YourAccountName" \</span>
+  <span class="hljs-comment">##   --from-literal=azure-account-key="YourAccountKey"</span>
+  <span class="hljs-comment">## ref: https://kubernetes.io/docs/concepts/configuration/secret/</span>
+
+  <span class="hljs-attr">cache:</span> {}
+    <span class="hljs-comment">## General settings</span>
+    <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration and https://docs.gitlab.com/runner/install/kubernetes.html#using-cache-with-configuration-template</span>
+    <span class="hljs-comment"># cacheType: s3</span>
+    <span class="hljs-comment"># cachePath: "gitlab_runner"</span>
+    <span class="hljs-comment"># cacheShared: true</span>
+
+    <span class="hljs-comment">## S3 settings</span>
+    <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration and https://docs.gitlab.com/runner/install/kubernetes.html#using-cache-with-configuration-template</span>
+    <span class="hljs-comment"># s3ServerAddress: s3.amazonaws.com</span>
+    <span class="hljs-comment"># s3BucketName:</span>
+    <span class="hljs-comment"># s3BucketLocation:</span>
+    <span class="hljs-comment"># s3CacheInsecure: false</span>
+
+    <span class="hljs-comment">## GCS settings</span>
+    <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration and https://docs.gitlab.com/runner/install/kubernetes.html#using-cache-with-configuration-template</span>
+    <span class="hljs-comment"># gcsBucketName:</span>
+
+    <span class="hljs-comment">## S3 the name of the secret.</span>
+    <span class="hljs-comment"># secretName: s3access</span>
+    <span class="hljs-comment">## Use this line for access using gcs-access-id and gcs-private-key</span>
+    <span class="hljs-comment"># secretName: gcsaccess</span>
+    <span class="hljs-comment">## Use this line for access using google-application-credentials file</span>
+    <span class="hljs-comment"># secretName: google-application-credentials</span>
+    <span class="hljs-comment">## Use this line for access using Azure with azure-account-name and azure-account-key</span>
+    <span class="hljs-comment"># secretName: azureaccess</span>
+
+
+  <span class="hljs-comment">## Build Container specific configuration</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-attr">builds:</span> {}
+    <span class="hljs-comment"># cpuLimit: 200m</span>
+    <span class="hljs-comment"># cpuLimitOverwriteMaxAllowed: 400m</span>
+    <span class="hljs-comment"># memoryLimit: 256Mi</span>
+    <span class="hljs-comment"># memoryLimitOverwriteMaxAllowed: 512Mi</span>
+    <span class="hljs-comment"># cpuRequests: 100m</span>
+    <span class="hljs-comment"># cpuRequestsOverwriteMaxAllowed: 200m</span>
+    <span class="hljs-comment"># memoryRequests: 128Mi</span>
+    <span class="hljs-comment"># memoryRequestsOverwriteMaxAllowed: 256Mi</span>
+
+  <span class="hljs-comment">## Service Container specific configuration</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-attr">services:</span> {}
+    <span class="hljs-comment"># cpuLimit: 200m</span>
+    <span class="hljs-comment"># memoryLimit: 256Mi</span>
+    <span class="hljs-comment"># cpuRequests: 100m</span>
+    <span class="hljs-comment"># memoryRequests: 128Mi</span>
+
+  <span class="hljs-comment">## Helper Container specific configuration</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-attr">helpers:</span> {}
+    <span class="hljs-comment"># cpuLimit: 200m</span>
+    <span class="hljs-comment"># memoryLimit: 256Mi</span>
+    <span class="hljs-comment"># cpuRequests: 100m</span>
+    <span class="hljs-comment"># memoryRequests: 128Mi</span>
+    <span class="hljs-comment"># image: "gitlab/gitlab-runner-helper:x86_64-${CI_RUNNER_REVISION}"</span>
+
+  <span class="hljs-comment">## Helper container security context configuration</span>
+  <span class="hljs-comment">## Refer to https://docs.gitlab.com/runner/executors/kubernetes.html#using-security-context</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-comment"># pod_security_context:</span>
+  <span class="hljs-comment">#   run_as_non_root: true</span>
+  <span class="hljs-comment">#   run_as_user: 100</span>
+  <span class="hljs-comment">#   run_as_group: 100</span>
+  <span class="hljs-comment">#   fs_group: 65533</span>
+  <span class="hljs-comment">#   supplemental_groups: [101, 102]</span>
+
+  <span class="hljs-comment">## Service Account to be used for runners</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment"># serviceAccountName:</span>
+
+  <span class="hljs-comment">## If Gitlab is not reachable through $CI_SERVER_URL</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-comment"># cloneUrl:</span>
+
+  <span class="hljs-comment">## Specify node labels for CI job pods assignment</span>
+  <span class="hljs-comment">## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-comment"># nodeSelector: {}</span>
+  <span class="hljs-attr">nodeSelector:</span>
+    <span class="hljs-attr">node-role.kubernetes.io/master:</span> <span class="hljs-string">"true"</span>
+    <span class="hljs-attr">gitlab-runner:</span> <span class="hljs-string">"true"</span>
+  <span class="hljs-comment">## Specify node tolerations for CI job pods assignment</span>
+  <span class="hljs-comment">## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-comment"># nodeTolerations: {}</span>
+
+  <span class="hljs-comment">## Specify pod labels for CI job pods</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-comment"># podLabels: {}</span>
+
+  <span class="hljs-comment">## Specify annotations for job pods, useful for annotations such as iam.amazonaws.com/role</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-comment"># podAnnotations: {}</span>
+
+  <span class="hljs-comment">## Configure environment variables that will be injected to the pods that are created while</span>
+  <span class="hljs-comment">## the build is running. These variables are passed as parameters, i.e. `--env "NAME=VALUE"`,</span>
+  <span class="hljs-comment">## to `gitlab-runner register` command.</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## Note that `envVars` (see below) are only present in the runner pod, not the pods that are</span>
+  <span class="hljs-comment">## created for each build.</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## ref: https://docs.gitlab.com/runner/commands/#gitlab-runner-register</span>
+  <span class="hljs-comment">##</span>
+  <span class="hljs-comment">## DEPRECATED: See https://docs.gitlab.com/runner/install/kubernetes.html#additional-configuration</span>
+  <span class="hljs-comment"># env:</span>
+  <span class="hljs-comment">#   NAME: VALUE</span>
+
+
+<span class="hljs-comment">## Specify the name of the scheduler which used to schedule runner pods.</span>
+<span class="hljs-comment">## Kubernetes supports multiple scheduler configurations.</span>
+<span class="hljs-comment">## ref: https://kubernetes.io/docs/reference/scheduling</span>
+<span class="hljs-comment"># schedulerName: "my-custom-scheduler"</span>
+
+<span class="hljs-comment">## Configure securitycontext</span>
+<span class="hljs-comment">## ref: http://kubernetes.io/docs/user-guide/security-context/</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-attr">securityContext:</span>
+  <span class="hljs-attr">runAsUser:</span> <span class="hljs-number">0</span>
+  <span class="hljs-attr">fsGroup:</span> <span class="hljs-number">0</span>
+  <span class="hljs-comment">#runAsUser: 100</span>
+  <span class="hljs-comment"># runAsGroup: 65533</span>
+  <span class="hljs-comment">#fsGroup: 65533</span>
+  <span class="hljs-comment"># supplementalGroups: [65533]</span>
+
+  <span class="hljs-comment">## <span class="hljs-doctag">Note:</span> values for the ubuntu image:</span>
+  <span class="hljs-comment"># runAsUser: 999</span>
+  <span class="hljs-comment"># fsGroup: 999</span>
+
+<span class="hljs-comment">## Configure resource requests and limits</span>
+<span class="hljs-comment">## ref: http://kubernetes.io/docs/user-guide/compute-resources/</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-attr">resources:</span> {}
+  <span class="hljs-comment"># limits:</span>
+  <span class="hljs-comment">#   memory: 256Mi</span>
+  <span class="hljs-comment">#   cpu: 200m</span>
+  <span class="hljs-comment"># requests:</span>
+  <span class="hljs-comment">#   memory: 128Mi</span>
+  <span class="hljs-comment">#   cpu: 100m</span>
+
+<span class="hljs-comment">## Affinity for pod assignment</span>
+<span class="hljs-comment">## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-attr">affinity:</span> {}
+
+<span class="hljs-comment">## Node labels for pod assignment</span>
+<span class="hljs-comment">## Ref: https://kubernetes.io/docs/user-guide/node-selection/</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment">#nodeSelector: {}</span>
+<span class="hljs-attr">nodeSelector:</span>
+  <span class="hljs-attr">node-role.kubernetes.io/master:</span> <span class="hljs-string">"true"</span>
+  <span class="hljs-attr">gitlab-runner:</span> <span class="hljs-string">"true"</span>
+
+  <span class="hljs-comment"># Example: The gitlab runner manager should not run on spot instances so you can assign</span>
+  <span class="hljs-comment"># them to the regular worker nodes only.</span>
+  <span class="hljs-comment"># node-role.kubernetes.io/worker: "true"</span>
+
+<span class="hljs-comment">## List of node taints to tolerate (requires Kubernetes &gt;= 1.6)</span>
+<span class="hljs-comment">## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-attr">tolerations:</span> []
+  <span class="hljs-comment"># Example: Regular worker nodes may have a taint, thus you need to tolerate the taint</span>
+  <span class="hljs-comment"># when you assign the gitlab runner manager with nodeSelector or affinity to the nodes.</span>
+  <span class="hljs-comment"># - key: "node-role.kubernetes.io/worker"</span>
+  <span class="hljs-comment">#   operator: "Exists"</span>
+
+<span class="hljs-comment">## Configure environment variables that will be present when the registration command runs</span>
+<span class="hljs-comment">## This provides further control over the registration process and the config.toml file</span>
+<span class="hljs-comment">## ref: `gitlab-runner register --help`</span>
+<span class="hljs-comment">## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment"># envVars:</span>
+<span class="hljs-comment">#   - name: RUNNER_EXECUTOR</span>
+<span class="hljs-comment">#     value: kubernetes</span>
+
+<span class="hljs-comment">## list of hosts and IPs that will be injected into the pod's hosts file</span>
+<span class="hljs-attr">hostAliases:</span> []
+  <span class="hljs-comment"># Example:</span>
+  <span class="hljs-comment"># - ip: "127.0.0.1"</span>
+  <span class="hljs-comment">#   hostnames:</span>
+  <span class="hljs-comment">#   - "foo.local"</span>
+  <span class="hljs-comment">#   - "bar.local"</span>
+  <span class="hljs-comment"># - ip: "10.1.2.3"</span>
+  <span class="hljs-comment">#   hostnames:</span>
+  <span class="hljs-comment">#   - "foo.remote"</span>
+  <span class="hljs-comment">#   - "bar.remote"</span>
+
+<span class="hljs-comment">## Annotations to be added to manager pod</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-attr">podAnnotations:</span> {}
+  <span class="hljs-comment"># Example:</span>
+  <span class="hljs-comment"># iam.amazonaws.com/role: &lt;my_role_arn&gt;</span>
+
+<span class="hljs-comment">## Labels to be added to manager pod</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-attr">podLabels:</span> {}
+  <span class="hljs-comment"># Example:</span>
+  <span class="hljs-comment"># owner.team: &lt;my_cool_team&gt;</span>
+
+<span class="hljs-comment">## HPA support for custom metrics:</span>
+<span class="hljs-comment">## This section enables runners to autoscale based on defined custom metrics.</span>
+<span class="hljs-comment">## In order to use this functionality, Need to enable a custom metrics API server by</span>
+<span class="hljs-comment">## implementing "custom.metrics.k8s.io" using supported third party adapter</span>
+<span class="hljs-comment">## Example: https://github.com/directxman12/k8s-prometheus-adapter</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment">#hpa: {}</span>
+  <span class="hljs-comment"># minReplicas: 1</span>
+  <span class="hljs-comment"># maxReplicas: 10</span>
+  <span class="hljs-comment"># metrics:</span>
+  <span class="hljs-comment"># - type: Pods</span>
+  <span class="hljs-comment">#   pods:</span>
+  <span class="hljs-comment">#     metricName: gitlab_runner_jobs</span>
+  <span class="hljs-comment">#     targetAverageValue: 400m</span>
+
+<span class="hljs-comment">## Secrets to be additionally mounted to the containers.</span>
+<span class="hljs-comment">## All secrets are mounted through init-runner-secrets volume</span>
+<span class="hljs-comment">## and placed as readonly at /init-secrets in the init container</span>
+<span class="hljs-comment">## and finally copied to an in-memory volume runner-secrets that is</span>
+<span class="hljs-comment">## mounted at /secrets.</span>
+<span class="hljs-attr">secrets:</span> []
+  <span class="hljs-comment"># Example:</span>
+  <span class="hljs-comment"># - name: my-secret</span>
+  <span class="hljs-comment"># - name: myOtherSecret</span>
+  <span class="hljs-comment">#   items:</span>
+  <span class="hljs-comment">#     - key: key_one</span>
+  <span class="hljs-comment">#       path: path_one</span>
+
+<span class="hljs-comment">## Additional config files to mount in the containers in `/configmaps`.</span>
+<span class="hljs-comment">##</span>
+<span class="hljs-comment">## Please note that a number of keys are reserved by the runner.</span>
+<span class="hljs-comment">## See https://gitlab.com/gitlab-org/charts/gitlab-runner/-/blob/main/templates/configmap.yaml</span>
+<span class="hljs-comment">## for a current list.</span>
+<span class="hljs-attr">configMaps:</span> {}
+<span class="hljs-comment">#cluster-wide or only within namespace</span>
+</code></pre></div>
+</li>
+<li>
+<h4 id="313-创建runner">3.1.3 创建runner</h4>
+<div><pre class="hljs"><code>helm install --namespace fz-web-detect gitlab-runner-web-detect-engine -f values.yaml gitlab/gitlab-runner</code></pre></div>
+</li>
+</ul>
+</li>
+<li>
+<h3 id="32-docker模式">3.2 docker模式</h3>
+<ul>
+<li>
+<h4 id="321-创建runer配置文件">3.2.1 创建runer配置文件</h4>
+修改runner配置文件，增加引擎runner配置，其中的url和token、clone_url和extra_hosts等字段需根据实际情况调整<div><pre class="hljs"><code><span class="hljs-section">[[runners]]</span>
+<span class="hljs-attr">name</span> = <span class="hljs-string">"web-detect-engine-docker-runner"</span>
+<span class="hljs-attr">url</span> = <span class="hljs-string">"http://192.168.75.205:58080/"</span>
+<span class="hljs-attr">token</span> = <span class="hljs-string">"ZsoGvQmYDcaD27xDKtXw"</span>
+<span class="hljs-attr">executor</span> = <span class="hljs-string">"docker"</span>
+<span class="hljs-attr">clone_url</span> = <span class="hljs-string">"http://192.168.75.205:58080/"</span>
+<span class="hljs-section">[runners.custom_build_dir]</span>
+<span class="hljs-section">[runners.cache]</span>
+<span class="hljs-section">[runners.cache.s3]</span>
+<span class="hljs-section">[runners.cache.gcs]</span>
+<span class="hljs-section">[runners.cache.azure]</span>
+<span class="hljs-section">[runners.docker]</span>
+<span class="hljs-attr">tls_verify</span> = <span class="hljs-literal">false</span>
+<span class="hljs-attr">image</span> = <span class="hljs-string">"julienlecomte/docker-make"</span>
+<span class="hljs-attr">privileged</span> = <span class="hljs-literal">true</span>
+<span class="hljs-attr">disable_entrypoint_overwrite</span> = <span class="hljs-literal">false</span>
+<span class="hljs-attr">oom_kill_disable</span> = <span class="hljs-literal">false</span>
+<span class="hljs-attr">disable_cache</span> = <span class="hljs-literal">false</span>
+<span class="hljs-attr">volumes</span> = [<span class="hljs-string">"/var/run/docker.sock:/var/run/docker.sock"</span>, <span class="hljs-string">"/root/.docker/config.json:/root/.docker/config.json"</span>, <span class="hljs-string">"/etc/docker/damon.json:/etc/docker/daemon.json"</span>, <span class="hljs-string">"/cache"</span>]
+<span class="hljs-attr">extra_hosts</span> = [<span class="hljs-string">"harbor.k8s.fz.eversec:192.168.75.205"</span>]
+<span class="hljs-attr">pull_policy</span> = [<span class="hljs-string">"if-not-present"</span>]
+<span class="hljs-attr">shm_size</span> = <span class="hljs-number">0</span>
+</code></pre></div>
+</li>
+<li>
+<h4 id="322-重启runer">3.2.2 重启runer</h4>
+<div><pre class="hljs"><code>docker restart gitlab-runner</code></pre></div>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<h2 id="4-搭建haproxy和keepalive负载均衡服务">4、搭建haproxy和keepalive负载均衡服务</h2>
+</li>
+<li>
+<h2 id="5-搭建metallb-裸金属服务">5、搭建metallb 裸金属服务</h2>
+</li>
+<li>
+<h2 id="6-搭建rancher集群可视化管理服务">6、搭建rancher集群可视化管理服务</h2>
+<ul>
+<li>
+<h3 id="61-安装cert-manager">6.1 安装cert-manager</h3>
+</li>
+</ul>
+</li>
+<li>
+<h2 id="7-搭建longhorn存储服务">7、搭建longhorn存储服务</h2>
+</li>
+<li>
+<h2 id="8-搭建邮件服务器">8、搭建邮件服务器</h2>
+</li>
+<li>
+<h2 id="9-prometheus和alert-manager监控预警服务">9、prometheus和alert-manager监控预警服务</h2>
+</li>
+<li>
+<h2 id="10-搭建istio服务">10、搭建istio服务</h2>
+</li>
+<li>
+<h2 id="11-搭建redis集群">11、搭建redis集群</h2>
+</li>
+</ul>
+</div>
+      </article>
+    </div>
+  </body>
+</html>
